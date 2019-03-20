@@ -74,8 +74,9 @@ func startHRpcServer() {
 		go func() {
 			_ = hnet.ListenSocket("tcp", hrpcAddr, func(socket *hnet.Socket) {
 				s := hrpc.NewServer(hrpc.DefaultOption)
-				s.Register(1, func(args *Req, reply *Resp) {
+				s.Register(1, func(args *Req, reply *Resp) error {
 					reply.B = args.A + 1
+					return nil
 				})
 				go func() {
 					_ = s.Listen(socket)
