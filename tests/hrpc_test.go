@@ -19,11 +19,7 @@ func Benchmark_hrpc_Call(b *testing.B) {
 	startHRpcServer()
 
 	client := hrpc.NewClient()
-	err := client.Connect("tcp", hrpcAddr)
-	if err != nil {
-		b.Fatal(err)
-	}
-	client.Start()
+	client.Run(getSocket(hrpcAddr))
 	defer client.Close()
 	b.StartTimer()
 	defer b.StopTimer()
@@ -40,11 +36,7 @@ func Benchmark_hrpc_Go(b *testing.B) {
 	startHRpcServer()
 
 	client := hrpc.NewClient()
-	err := client.Connect("tcp", hrpcAddr)
-	if err != nil {
-		b.Fatal(err)
-	}
-	client.Start()
+	client.Run(getSocket(hrpcAddr))
 	defer client.Close()
 	b.StartTimer()
 	defer b.StopTimer()
@@ -71,4 +63,9 @@ func startHRpcServer() {
 		}()
 		time.Sleep(100 * time.Millisecond)
 	})
+}
+
+func getSocket(addr string) *hnet.Socket {
+	socket, _ := hnet.ConnectSocket("tcp", addr)
+	return socket
 }
