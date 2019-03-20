@@ -25,7 +25,7 @@ func (r *RPCReq) Add(req *Req, resp *Resp) error {
 func Benchmark_go_rpc_Call(b *testing.B) {
 	startRpcServer()
 
-	s, _ := hnet.ConnectSocket("tcp", rpcAddr, hnet.NewOption())
+	s, _ := hnet.ConnectSocket("tcp", rpcAddr)
 	client := rpc.NewClient(s)
 	b.StartTimer()
 	defer b.StopTimer()
@@ -41,7 +41,7 @@ func Benchmark_go_rpc_Call(b *testing.B) {
 func Benchmark_go_rpc_Go(b *testing.B) {
 	startRpcServer()
 
-	s, _ := hnet.ConnectSocket("tcp", rpcAddr, hnet.NewOption())
+	s, _ := hnet.ConnectSocket("tcp", rpcAddr)
 	client := rpc.NewClient(s)
 	b.StartTimer()
 	defer b.StopTimer()
@@ -59,7 +59,7 @@ func startRpcServer() {
 				server := rpc.NewServer()
 				_ = server.Register(new(RPCReq))
 				go server.ServeConn(socket)
-			}, hnet.NewOption())
+			})
 		}()
 
 		time.Sleep(100 * time.Millisecond)

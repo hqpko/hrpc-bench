@@ -15,31 +15,15 @@ var (
 	hrpcOnce = new(sync.Once)
 )
 
-func Test_hrpc(t *testing.T) {
-	startHRpcServer()
-
-	client, err := hrpc.Connect("tcp", hrpcAddr, hrpc.DefaultOption)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer client.Close()
-	reply := &Resp{}
-	e := client.Call(1, &Req{A: 1}, reply)
-	if e != nil {
-		t.Fatal(e)
-	}
-	if reply.B != 2 {
-		t.Fatal("call error")
-	}
-}
-
 func Benchmark_hrpc_Call(b *testing.B) {
 	startHRpcServer()
 
-	client, err := hrpc.Connect("tcp", hrpcAddr, hrpc.DefaultOption)
+	client := hrpc.NewClient()
+	err := client.Connect("tcp", hrpcAddr)
 	if err != nil {
 		b.Fatal(err)
 	}
+	client.Start()
 	defer client.Close()
 	b.StartTimer()
 	defer b.StopTimer()
@@ -55,10 +39,12 @@ func Benchmark_hrpc_Call(b *testing.B) {
 func Benchmark_hrpc_Go(b *testing.B) {
 	startHRpcServer()
 
-	client, err := hrpc.Connect("tcp", hrpcAddr, hrpc.DefaultOption)
+	client := hrpc.NewClient()
+	err := client.Connect("tcp", hrpcAddr)
 	if err != nil {
 		b.Fatal(err)
 	}
+	client.Start()
 	defer client.Close()
 	b.StartTimer()
 	defer b.StopTimer()
@@ -73,7 +59,7 @@ func startHRpcServer() {
 	hrpcOnce.Do(func() {
 		go func() {
 			_ = hnet.ListenSocket("tcp", hrpcAddr, func(socket *hnet.Socket) {
-				s := hrpc.NewServer(hrpc.DefaultOption)
+				s := hrpc.NewServer()
 				s.Register(1, func(args *Req, reply *Resp) error {
 					reply.B = args.A + 1
 					return nil
@@ -81,7 +67,7 @@ func startHRpcServer() {
 				go func() {
 					_ = s.Listen(socket)
 				}()
-			}, hnet.NewOption())
+			})
 		}()
 		time.Sleep(100 * time.Millisecond)
 	})
