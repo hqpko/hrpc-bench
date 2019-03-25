@@ -21,7 +21,8 @@ func Benchmark_hrpc_Call(b *testing.B) {
 	startHRpcServer()
 
 	client := hrpc.NewClient().SetBufferPool(bufferPool)
-	client.Run(getSocket(hrpcAddr))
+	go client.Run(getSocket(hrpcAddr))
+	time.Sleep(100 * time.Millisecond)
 	defer client.Close()
 	b.StartTimer()
 	defer b.StopTimer()
@@ -38,7 +39,8 @@ func Benchmark_hrpc_Go(b *testing.B) {
 	startHRpcServer()
 
 	client := hrpc.NewClient().SetBufferPool(bufferPool)
-	client.Run(getSocket(hrpcAddr))
+	go client.Run(getSocket(hrpcAddr))
+	time.Sleep(100 * time.Millisecond)
 	defer client.Close()
 	b.StartTimer()
 	defer b.StopTimer()
