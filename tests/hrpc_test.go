@@ -6,21 +6,19 @@ import (
 	"time"
 
 	"github.com/hqpko/hnet"
-	"github.com/hqpko/hpool"
 
 	"github.com/hqpko/hrpc"
 )
 
 var (
-	hrpcAddr   = "127.0.0.1:12003"
-	hrpcOnce   = new(sync.Once)
-	bufferPool = hpool.NewBufferPool(1024, 4*1024)
+	hrpcAddr = "127.0.0.1:12003"
+	hrpcOnce = new(sync.Once)
 )
 
 func Benchmark_hrpc_Call(b *testing.B) {
 	startHRpcServer()
 
-	client := hrpc.NewClient().SetBufferPool(bufferPool)
+	client := hrpc.NewClient()
 	go client.Run(getSocket(hrpcAddr))
 	time.Sleep(100 * time.Millisecond)
 	defer client.Close()
@@ -38,7 +36,7 @@ func Benchmark_hrpc_Call(b *testing.B) {
 func Benchmark_hrpc_Go(b *testing.B) {
 	startHRpcServer()
 
-	client := hrpc.NewClient().SetBufferPool(bufferPool)
+	client := hrpc.NewClient()
 	go client.Run(getSocket(hrpcAddr))
 	time.Sleep(100 * time.Millisecond)
 	defer client.Close()
