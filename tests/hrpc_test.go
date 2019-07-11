@@ -18,7 +18,7 @@ var (
 func Benchmark_hrpc_Call(b *testing.B) {
 	startHRpcServer()
 
-	client := hrpc.NewClient()
+	client := hrpc.NewStream()
 	go client.Run(getSocket(hrpcAddr))
 	time.Sleep(100 * time.Millisecond)
 	defer client.Close()
@@ -36,7 +36,7 @@ func Benchmark_hrpc_Call(b *testing.B) {
 func Benchmark_hrpc_Go(b *testing.B) {
 	startHRpcServer()
 
-	client := hrpc.NewClient()
+	client := hrpc.NewStream()
 	go client.Run(getSocket(hrpcAddr))
 	time.Sleep(100 * time.Millisecond)
 	defer client.Close()
@@ -53,13 +53,13 @@ func startHRpcServer() {
 	hrpcOnce.Do(func() {
 		go func() {
 			_ = hnet.ListenSocket("tcp", hrpcAddr, func(socket *hnet.Socket) {
-				s := hrpc.NewServer()
+				s := hrpc.NewStream()
 				s.Register(1, func(args *Req, reply *Resp) error {
 					reply.B = args.A + 1
 					return nil
 				})
 				go func() {
-					_ = s.Listen(socket)
+					_ = s.Run(socket)
 				}()
 			})
 		}()
