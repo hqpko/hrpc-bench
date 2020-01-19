@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/hqpko/hnet"
 	"github.com/hqpko/hrpc"
 )
 
@@ -16,16 +17,14 @@ var (
 func Benchmark_hrpc_Call(b *testing.B) {
 	startHRpcServer()
 
-	client, _ := hrpc.Connect(hrpcAddr)
+	socket, _ := hnet.ConnectSocket("tcp", hrpcAddr)
+	client := hrpc.NewClient(socket)
 	go client.Run()
-	time.Sleep(100 * time.Millisecond)
-	defer client.Close()
 	b.StartTimer()
 	defer b.StopTimer()
-	reply := &Resp{}
-	req := &Req{A: 1}
+	args := []byte{1}
 	for i := 0; i < b.N; i++ {
-		if err := client.Call(1, req, reply); err != nil {
+		if _, err := client.Call(1, args); err != nil {
 			b.Fatal(err)
 		}
 	}
@@ -34,30 +33,26 @@ func Benchmark_hrpc_Call(b *testing.B) {
 func Benchmark_hrpc_Go(b *testing.B) {
 	startHRpcServer()
 
-	client, _ := hrpc.Connect(hrpcAddr)
+	socket, _ := hnet.ConnectSocket("tcp", hrpcAddr)
+	client := hrpc.NewClient(socket)
 	go client.Run()
-	time.Sleep(100 * time.Millisecond)
-	defer client.Close()
 	b.StartTimer()
 	defer b.StopTimer()
-	req := &Req{A: 1}
-	reply := &Resp{}
+	args := []byte{1}
 	for i := 0; i < b.N; i++ {
-		_ = client.Go(1, req, reply, false)
+		client.Go(1, args)
 	}
 }
 
 func startHRpcServer() {
 	hrpcOnce.Do(func() {
 		go func() {
-			_ = hrpc.Listen(hrpcAddr, func(stream *hrpc.Stream) {
-				stream.Register(1, func(args *Req, reply *Resp) error {
-					reply.B = args.A + 1
-					return nil
+			hnet.ListenSocket("tcp", hrpcAddr, func(socket *hnet.Socket) {
+				server := hrpc.NewServer(socket)
+				server.Register(1, func(seq uint64, args []byte) {
+					server.Reply(seq, args)
 				})
-				go func() {
-					_ = stream.Run()
-				}()
+				go server.Run()
 			})
 		}()
 		time.Sleep(100 * time.Millisecond)
