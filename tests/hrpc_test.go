@@ -18,7 +18,8 @@ func Benchmark_hrpc_Call(b *testing.B) {
 	startHRpcServer()
 
 	socket, _ := hnet.ConnectSocket("tcp", hrpcAddr)
-	client := hrpc.NewClient(socket)
+	client := hrpc.NewClient()
+	client.SetSocket(socket)
 	go client.Run()
 	b.StartTimer()
 	defer b.StopTimer()
@@ -34,7 +35,8 @@ func Benchmark_hrpc_Go(b *testing.B) {
 	startHRpcServer()
 
 	socket, _ := hnet.ConnectSocket("tcp", hrpcAddr)
-	client := hrpc.NewClient(socket)
+	client := hrpc.NewClient()
+	client.SetSocket(socket)
 	go client.Run()
 	b.StartTimer()
 	defer b.StopTimer()
@@ -48,9 +50,10 @@ func startHRpcServer() {
 	hrpcOnce.Do(func() {
 		go func() {
 			hnet.ListenSocket("tcp", hrpcAddr, func(socket *hnet.Socket) {
-				server := hrpc.NewServer(socket)
-				server.Register(1, func(seq uint64, args []byte) {
-					server.Reply(seq, args)
+				server := hrpc.NewServer()
+				server.SetSocket(socket)
+				server.SetHandlerCall(func(pid int32, seq uint64, args []byte) {
+					_ = server.Reply(seq, args)
 				})
 				go server.Run()
 			})
