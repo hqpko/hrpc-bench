@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"encoding/json"
 	"sync"
 	"testing"
 	"time"
@@ -22,10 +23,17 @@ func Benchmark_hrpc_Call(b *testing.B) {
 	go client.Run()
 	b.StartTimer()
 	defer b.StopTimer()
-	args := []byte{1}
+	req := &helloReq{Msg: "Hello"}
+	rsp := &helloRsp{}
 	for i := 0; i < b.N; i++ {
-		if _, err := client.Call(1, args); err != nil {
+		args, _ := json.Marshal(req)
+		if resp, err := client.Call(1, args); err != nil {
 			b.Fatal(err)
+		} else {
+			_ = json.Unmarshal(resp, rsp)
+			if rsp.Msg != req.Msg {
+				b.Errorf("fail hrpc %s %s", rsp.Msg, req.Msg)
+			}
 		}
 	}
 }
@@ -50,7 +58,11 @@ func startHRpcServer() {
 			hnet.ListenSocket(hrpcAddr, func(socket *hnet.Socket) {
 				server := hrpc.NewServer(socket)
 				server.SetHandlerCall(func(pid int32, seq uint64, args []byte) {
-					_ = server.Reply(seq, args)
+					req := &helloReq{}
+					_ = json.Unmarshal(args, req)
+					rsp := helloRsp{Msg: req.Msg}
+					resp, _ := json.Marshal(rsp)
+					_ = server.Reply(seq, resp)
 				})
 				go server.Run()
 			})
