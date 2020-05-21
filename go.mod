@@ -7,7 +7,8 @@ require (
 	github.com/hprose/hprose-golang v2.0.5+incompatible
 	github.com/hqpko/hnet v0.5.2
 	github.com/hqpko/hrpc v0.6.3
-	github.com/lesismal/arpc v0.0.0-20200519155948-42d777a81af7
+	github.com/lesismal/arpc v0.0.0-20200521092711-fdd1262e2740
+	github.com/lesismal/mmp v0.0.0-20200521092854-803dc19ddcbd // indirect
 	github.com/smallnest/rpcx v0.0.0-20200516063136-b01b68f58652
 	google.golang.org/grpc v1.29.1
 )

@@ -35,6 +35,7 @@ func Benchmark_arpc_Call(b *testing.B) {
 		}
 	}
 }
+
 func dialer() (net.Conn, error) {
 	return net.DialTimeout("tcp", arpcAddr, time.Second*3)
 }
