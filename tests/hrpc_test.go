@@ -30,20 +30,6 @@ func Benchmark_hrpc_Call(b *testing.B) {
 	}
 }
 
-func Benchmark_hrpc_Go(b *testing.B) {
-	startHRpcServer()
-
-	socket, _ := hnet.ConnectSocket(hrpcAddr)
-	client := hrpc.NewClient(socket)
-	go client.Run()
-	b.StartTimer()
-	defer b.StopTimer()
-	args := []byte{1}
-	for i := 0; i < b.N; i++ {
-		client.Go(1, args)
-	}
-}
-
 func startHRpcServer() {
 	hrpcOnce.Do(func() {
 		go func() {

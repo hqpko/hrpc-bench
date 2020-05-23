@@ -287,6 +287,8 @@ github.com/lesismal/arpc v0.0.0-20200519155948-42d777a81af7 h1:llUc8c6F/oYNliUxX
 github.com/lesismal/arpc v0.0.0-20200519155948-42d777a81af7/go.mod h1:Bhghaw0/4n2U3EMNGbS19Osqj6UBuFjTooyCR/12hUQ=
 github.com/lesismal/arpc v0.0.0-20200521092711-fdd1262e2740 h1:8lnJNQRtL1pVXLEbhe1ImMM2rPBsOQkyoi5xez4z0gU=
 github.com/lesismal/arpc v0.0.0-20200521092711-fdd1262e2740/go.mod h1:Bhghaw0/4n2U3EMNGbS19Osqj6UBuFjTooyCR/12hUQ=
+github.com/lesismal/arpc v0.0.0-20200522195256-e09a186bbc50 h1:FGg2ytkVJgRt6O/Sprr+Cr1HC1osyC2GH4nzXEQzo5A=
+github.com/lesismal/arpc v0.0.0-20200522195256-e09a186bbc50/go.mod h1:Bhghaw0/4n2U3EMNGbS19Osqj6UBuFjTooyCR/12hUQ=
 github.com/lesismal/mmp v0.0.0-20200521092854-803dc19ddcbd h1:5WqHfJOkErJTBE5STeITGsIjhOS9HMbmSoA4XRa8HwE=
 github.com/lesismal/mmp v0.0.0-20200521092854-803dc19ddcbd/go.mod h1:jv/qYkRzI81+48HGaGHDWCkjBb172037tEjYVlGn0gg=
 github.com/lestrrat/go-envload v0.0.0-20180220120943-6ed08b54a570 h1:0iQektZGS248WXmGIYOwRXSQhD4qn3icjMpuxwO7qlo=
