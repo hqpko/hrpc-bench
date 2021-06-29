@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/golang/protobuf/proto"
 	"github.com/hqpko/hnet"
 	"github.com/hqpko/hrpc"
 )
@@ -22,9 +23,27 @@ func Benchmark_hrpc_Call(b *testing.B) {
 	go client.Run()
 	b.StartTimer()
 	defer b.StopTimer()
-	args := []byte{1}
+	req := &Req{A: 1}
 	for i := 0; i < b.N; i++ {
-		if _, err := client.Call(1, args); err != nil {
+		args, _ := proto.Marshal(req)
+		resp := &Resp{}
+		if respData, err := client.Call(1, args); err != nil {
+			b.Fatal(err)
+		} else {
+			_ = proto.Unmarshal(respData, resp)
+		}
+	}
+}
+
+func Benchmark_hrpc_Go(b *testing.B) {
+	startHRpcServer()
+
+	socket, _ := hnet.ConnectSocket(hrpcAddr)
+	client := hrpc.NewClient(socket)
+	req := &Req{A: 1}
+	for i := 0; i < b.N; i++ {
+		args, _ := proto.Marshal(req)
+		if err := client.OneWay(2, args); err != nil {
 			b.Fatal(err)
 		}
 	}
@@ -38,6 +57,7 @@ func startHRpcServer() {
 				server.SetHandlerCall(func(pid int32, seq uint64, args []byte) {
 					_ = server.Reply(seq, args)
 				})
+				server.SetHandlerOneWay(func(pid int32, args []byte) {})
 				go server.Run()
 			})
 		}()
