@@ -2,6 +2,7 @@ package tests
 
 import (
 	"context"
+	"math/rand"
 	"sync"
 	"testing"
 	"time"
@@ -37,6 +38,27 @@ func Benchmark_rpcx_Call(b *testing.B) {
 			b.Fatal(err)
 		}
 	}
+}
+
+func Benchmark_rpcx_Call_Concurrency(b *testing.B) {
+	startRpcxServer()
+
+	c := client.NewClient(client.DefaultOption)
+	if err := c.Connect("tcp", rpcxAddr); err != nil {
+		b.Fatal(err)
+	}
+	b.RunParallel(func(pb *testing.PB) {
+		req := &HelloRequest{A: rand.Int31n(100)}
+		reply := &Resp{}
+		for pb.Next() {
+			if err := c.Call(context.Background(), "RPCXReq", "Mul", req, reply); err != nil {
+				b.Fatal(err)
+			} else if reply.B != req.A+1 {
+				b.Fatal("resp.B != req.A+1")
+			}
+			req.A++
+		}
+	})
 }
 
 func Benchmark_rpcx_Go(b *testing.B) {

@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"math/rand"
 	"net/rpc"
 	"sync"
 	"testing"
@@ -36,6 +37,27 @@ func Benchmark_go_rpc_Call(b *testing.B) {
 			b.Fatal(err)
 		}
 	}
+}
+
+func Benchmark_go_rpc_Call_Concurrency(b *testing.B) {
+	startRpcServer()
+
+	s, _ := hnet.ConnectSocket(rpcAddr)
+	client := rpc.NewClient(s)
+	b.StartTimer()
+	defer b.StopTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		req := &HelloRequest{A: rand.Int31n(100)}
+		reply := &Resp{}
+		for pb.Next() {
+			if err := client.Call("RPCReq.Add", req, reply); err != nil {
+				b.Fatal(err)
+			} else if reply.B != req.A+1 {
+				b.Fatal("resp.B != req.A+1")
+			}
+		}
+		req.A++
+	})
 }
 
 func Benchmark_go_rpc_Go(b *testing.B) {

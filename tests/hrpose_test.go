@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"math/rand"
 	"sync"
 	"testing"
 
@@ -37,6 +38,29 @@ func Benchmark_hprose_Call(b *testing.B) {
 			b.Fatal(err)
 		}
 	}
+}
+
+func Benchmark_hprose_Call_Concurrency(b *testing.B) {
+	startHproseServer()
+
+	client := rpc.NewClient(hproseAddr)
+	defer client.Close()
+
+	var stub *HproseStub
+	client.UseService(&stub)
+
+	b.StartTimer()
+	defer b.StopTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		req := rand.Int31n(100)
+		for pb.Next() {
+			if resp, err := stub.Hello(req); err != nil {
+				b.Fatal(err)
+			} else if resp != req+1 {
+				b.Fatal("resp!=req+1")
+			}
+		}
+	})
 }
 
 func startHproseServer() {

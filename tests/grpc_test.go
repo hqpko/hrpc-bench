@@ -3,6 +3,7 @@ package tests
 import (
 	"context"
 	"log"
+	"math/rand"
 	"net"
 	"sync"
 	"testing"
@@ -45,6 +46,35 @@ func Benchmark_grpc_Call(b *testing.B) {
 			b.Fatal(err)
 		}
 	}
+}
+
+func Benchmark_grpc_Call_Concurrency(b *testing.B) {
+	startGRpcServer()
+
+	conn, err := grpc.Dial(grpcAddr, grpc.WithInsecure())
+	if err != nil {
+		b.Fatal(err)
+	}
+	defer conn.Close()
+	c := NewGRpcReqClient(conn)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	b.StartTimer()
+	defer b.StopTimer()
+	b.SetParallelism(16)
+	b.RunParallel(func(pb *testing.PB) {
+		req := &HelloRequest{A: rand.Int31n(100)}
+		for pb.Next() {
+			if resp, err := c.SayHello(ctx, req); err != nil {
+				b.Fatal(err)
+			} else if resp.B != req.A+1 {
+				b.Fatal("resp.B != req.A+1")
+			}
+			req.A++
+		}
+	})
 }
 
 func startGRpcServer() {

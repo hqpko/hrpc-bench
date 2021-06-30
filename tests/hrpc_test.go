@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"math/rand"
 	"sync"
 	"testing"
 	"time"
@@ -35,6 +36,31 @@ func Benchmark_hrpc_Call(b *testing.B) {
 	}
 }
 
+func Benchmark_hrpc_Call_Concurrcncy(b *testing.B) {
+	startHRpcServer()
+
+	socket, _ := hnet.ConnectSocket(hrpcAddr)
+	client := hrpc.NewClient(socket)
+	go client.Run()
+	b.StartTimer()
+	defer b.StopTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		req := &HelloRequest{A: rand.Int31n(100)}
+		resp := &Resp{}
+		for pb.Next() {
+			args, _ := proto.Marshal(req)
+			if respData, err := client.Call(1, args); err != nil {
+				b.Fatal(err)
+			} else if err = proto.Unmarshal(respData, resp); err != nil {
+				b.Fatal(err)
+			} else if resp.B != req.A+1 {
+				b.Fatal("resp.B!=req.A+1")
+			}
+		}
+		req.A++
+	})
+}
+
 func Benchmark_hrpc_Go(b *testing.B) {
 	startHRpcServer()
 
@@ -55,9 +81,16 @@ func startHRpcServer() {
 			hnet.ListenSocket(hrpcAddr, func(socket *hnet.Socket) {
 				server := hrpc.NewServer(socket)
 				server.SetHandlerCall(func(pid int32, seq uint64, args []byte) {
-					_ = server.Reply(seq, args)
+					req := &Req{}
+					_ = proto.Unmarshal(args, req)
+					resp := &Resp{B: req.A + 1}
+					data, _ := proto.Marshal(resp)
+					_ = server.Reply(seq, data)
 				})
-				server.SetHandlerOneWay(func(pid int32, args []byte) {})
+				server.SetHandlerOneWay(func(pid int32, args []byte) {
+					req := &Req{}
+					_ = proto.Unmarshal(args, req)
+				})
 				go server.Run()
 			})
 		}()
