@@ -80,7 +80,7 @@ func startHRpcServer() {
 		go func() {
 			hnet.ListenSocket(hrpcAddr, func(socket *hnet.Socket) {
 				server := hrpc.NewServer(socket)
-				server.SetHandlerCall(func(pid int32, seq uint64, args []byte) {
+				server.SetHandlerCall(func(pid int32, seq uint32, args []byte) {
 					req := &Req{}
 					_ = proto.Unmarshal(args, req)
 					resp := &Resp{B: req.A + 1}
