@@ -13,5 +13,5 @@ require (
 	github.com/hqpko/hrpc v0.9.0
 	github.com/lesismal/arpc v1.2.11
 	github.com/smallnest/rpcx v1.8.3
-	google.golang.org/grpc v1.53.0
+	google.golang.org/grpc v1.56.3
 )
